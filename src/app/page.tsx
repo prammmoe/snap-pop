@@ -4,26 +4,32 @@ import { useEffect, useRef, useState } from "react";
 import {
   AppHeader,
   CaptureCameraPanel,
+  CaptureNextPanel,
   FilterDownloadPanel,
+  FinishPreviewPanel,
   FrameSelectionScreen,
   PreviewPanel,
   WelcomeScreen,
 } from "./photo-booth-ui";
 import {
+  FRAME_DESIGNS,
   FRAME_TEMPLATES,
   LIVE_CLIP_SECONDS,
   PHOTO_FILTERS,
   type AppStep,
   type CameraState,
   type DownloadMode,
+  type FrameDesign,
   type FrameTemplate,
   type LiveClip,
   createCapturedPhotoCanvas,
   createEmptyLiveClips,
   createEmptyPhotos,
+  drawFrameDesign,
   drawStripBase,
   drawStripFrame,
   getFilterById,
+  getFrameDesignById,
   getStripMetrics,
   getSupportedMp4MimeType,
   getTemplateById,
@@ -45,12 +51,16 @@ export default function Home() {
   const [cameraState, setCameraState] = useState<CameraState>("loading");
   const [downloadMode, setDownloadMode] = useState<DownloadMode>("image");
   const [filterId, setFilterId] = useState(PHOTO_FILTERS[0].id);
-  const [liveDownloadError, setLiveDownloadError] = useState<string | null>(null);
+  const [frameDesignId, setFrameDesignId] = useState(FRAME_DESIGNS[0].id);
+  const [liveDownloadError, setLiveDownloadError] = useState<string | null>(
+    null,
+  );
   const [liveVideoSupported, setLiveVideoSupported] = useState(false);
   const [templateId, setTemplateId] = useState(FRAME_TEMPLATES[0].id);
 
   const selectedTemplate = getTemplateById(templateId);
   const selectedFilter = getFilterById(filterId);
+  const selectedFrameDesign = getFrameDesignById(frameDesignId);
   const filteredMediaStyle = { filter: selectedFilter.previewFilter };
   const [photos, setPhotos] = useState<(string | null)[]>(
     createEmptyPhotos(selectedTemplate.frameCount),
@@ -199,8 +209,6 @@ export default function Home() {
       recorderRef.current = null;
       liveChunksRef.current = [];
       liveMimeTypeRef.current = null;
-      liveClipUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
-      liveClipUrlsRef.current = [];
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     };
@@ -208,6 +216,13 @@ export default function Home() {
     // helper identity would reset the camera and discard capture progress.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appStep]);
+
+  useEffect(() => {
+    return () => {
+      liveClipUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      liveClipUrlsRef.current = [];
+    };
+  }, []);
 
   function selectTemplate(template: FrameTemplate) {
     setTemplateId(template.id);
@@ -221,6 +236,14 @@ export default function Home() {
   function openCaptureStep() {
     setCameraState("loading");
     setAppStep("capture");
+  }
+
+  function openFinishStep() {
+    if (!isStripComplete) {
+      return;
+    }
+
+    setAppStep("finish");
   }
 
   async function getLiveClip() {
@@ -238,7 +261,8 @@ export default function Home() {
 
     isRestartingLiveRecorderRef.current = true;
     clearLiveRestartTimeout();
-    const recorderMimeType = recorder.mimeType || liveMimeTypeRef.current || "video/mp4";
+    const recorderMimeType =
+      recorder.mimeType || liveMimeTypeRef.current || "video/mp4";
     const chunks = await stopLiveRecorder(recorder);
     recorderRef.current = null;
     startLiveRecorder(stream);
@@ -387,7 +411,7 @@ export default function Home() {
     const stripVideo = await finishedRecording;
     downloadObjectUrl(
       URL.createObjectURL(stripVideo),
-      `snap-pop-${selectedTemplate.id}-live-strip.mp4`,
+      `snap-pop-${selectedTemplate.id}-${selectedFrameDesign.id}-live-strip.mp4`,
     );
   }
 
@@ -407,12 +431,12 @@ export default function Home() {
       photos.map((photo) => loadPhoto(photo ?? "")),
     );
 
-    drawStrip(context, loadedPhotos, selectedTemplate);
+    drawStrip(context, loadedPhotos, selectedTemplate, selectedFrameDesign);
 
     const fileDate = new Date().toISOString().slice(0, 10);
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/jpeg", 0.94);
-    link.download = `snap-pop-${selectedTemplate.id}-${fileDate}.jpg`;
+    link.download = `snap-pop-${selectedTemplate.id}-${selectedFrameDesign.id}-${fileDate}.jpg`;
     link.click();
   }
 
@@ -429,10 +453,11 @@ export default function Home() {
     context: CanvasRenderingContext2D,
     images: CanvasImageSource[],
     template: FrameTemplate,
+    frameDesign: FrameDesign,
   ) {
     const metrics = getStripMetrics(template);
 
-    drawStripBase(context, template, metrics);
+    drawStripBase(context, template, frameDesign, metrics);
     images.forEach((image, index) => {
       drawStripFrame(
         context,
@@ -443,6 +468,7 @@ export default function Home() {
         selectedFilter.canvasFilter,
       );
     });
+    drawFrameDesign(context, frameDesign, metrics);
   }
 
   function drawLiveStrip(
@@ -455,7 +481,7 @@ export default function Home() {
 
       function draw(now: number) {
         startedAt ??= now;
-        drawStrip(context, videos, template);
+        drawStrip(context, videos, template, selectedFrameDesign);
 
         if (now - startedAt < LIVE_CLIP_SECONDS * 1000) {
           requestAnimationFrame(draw);
@@ -478,8 +504,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f8f3ea] px-4 py-5 text-[#201c18] sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <main className="app-shell">
+      <div className="app-frame">
         <AppHeader appStep={appStep} />
 
         {appStep === "welcome" ? (
@@ -520,15 +546,45 @@ export default function Home() {
                 onSelectFrame={setActiveFrame}
                 onSelectTemplate={selectTemplate}
               />
+              <CaptureNextPanel
+                isStripComplete={isStripComplete}
+                selectedTemplate={selectedTemplate}
+                onContinue={openFinishStep}
+              />
+            </aside>
+          </div>
+        ) : null}
+
+        {appStep === "finish" ? (
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,480px)] lg:items-start">
+            <section className="space-y-4">
+              <div className="space-y-3">
+                <h1 className="page-title">Choose your frame.</h1>
+                <p className="body-copy max-w-xl">
+                  Pick a final frame design, choose a filter, then download your
+                  strip.
+                </p>
+              </div>
+              <FinishPreviewPanel
+                photos={photos}
+                selectedFilter={selectedFilter}
+                selectedFrameDesign={selectedFrameDesign}
+                selectedTemplate={selectedTemplate}
+              />
+            </section>
+
+            <aside className="flex flex-col gap-4">
               <FilterDownloadPanel
                 canDownloadLiveClips={canDownloadLiveClips}
                 downloadMode={downloadMode}
                 isStripComplete={isStripComplete}
                 liveDownloadError={liveDownloadError}
                 liveVideoSupported={liveVideoSupported}
+                selectedFrameDesign={selectedFrameDesign}
                 selectedFilter={selectedFilter}
                 selectedTemplate={selectedTemplate}
                 onDownload={() => void downloadSelectedFormat()}
+                onSelectFrameDesign={setFrameDesignId}
                 onSelectDownloadMode={setDownloadMode}
                 onSelectFilter={setFilterId}
               />

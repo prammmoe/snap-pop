@@ -1,21 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8f3ea;
-  --foreground: #201c18;
+  --background: #f4ecd1;
+  --foreground: #243027;
+  --paper: #fff8df;
+  --paper-deep: #efe3bd;
+  --ink: #243027;
+  --teal: #78b8ad;
+  --teal-dark: #2f7670;
+  --coral: #ee7463;
+  --rose: #f2a2a4;
+  --sun: #f4cc65;
+  --sage: #a9b989;
+  --blue: #85acc7;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Avenir Next", "Trebuchet MS", sans-serif;
+  --font-sans: "Palatino Linotype", "Book Antiqua", Georgia, serif;
   --font-mono: "SFMono-Regular", Consolas, monospace;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 12% 14%, rgba(244, 204, 101, 0.38) 0 4rem, transparent 4.1rem),
+    radial-gradient(circle at 88% 10%, rgba(238, 116, 99, 0.24) 0 4.5rem, transparent 4.6rem),
+    radial-gradient(circle at 18% 86%, rgba(120, 184, 173, 0.28) 0 5rem, transparent 5.1rem),
+    linear-gradient(90deg, rgba(36, 48, 39, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 48, 39, 0.035) 1px, transparent 1px),
+    var(--background);
+  background-size: auto, auto, auto, 38px 38px, 38px 38px, auto;
   color: var(--foreground);
-  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 button {
@@ -26,4 +43,317 @@ img,
 video,
 canvas {
   display: block;
+}
+
+.app-shell {
+  min-height: 100vh;
+  color: var(--ink);
+  padding: 1.25rem 1rem;
+}
+
+.app-frame {
+  position: relative;
+  margin-inline: auto;
+  display: flex;
+  width: 100%;
+  max-width: 80rem;
+  flex-direction: column;
+  gap: 1.5rem;
+  border: 3px solid var(--ink);
+  border-radius: 2rem;
+  background:
+    linear-gradient(135deg, rgba(255, 248, 223, 0.96), rgba(239, 227, 189, 0.92)),
+    var(--paper);
+  padding: 1rem;
+  box-shadow: 0 22px 0 rgba(36, 48, 39, 0.14), 0 30px 60px rgba(36, 48, 39, 0.18);
+  overflow: hidden;
+}
+
+.app-frame::before,
+.app-frame::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  width: 15rem;
+  height: 15rem;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background:
+    conic-gradient(from 0deg, var(--sun), var(--rose), var(--teal), var(--sage), var(--sun));
+  opacity: 0.42;
+}
+
+.app-frame::before {
+  top: -9rem;
+  left: -7rem;
+}
+
+.app-frame::after {
+  right: -8rem;
+  bottom: -9rem;
+}
+
+.app-frame > * {
+  position: relative;
+  z-index: 1;
+}
+
+.site-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border: 2px solid var(--ink);
+  border-radius: 1.35rem;
+  background: var(--teal);
+  padding: 0.85rem 1rem;
+  box-shadow: inset 0 0 0 4px rgba(255, 248, 223, 0.48);
+}
+
+.brand-mark {
+  color: var(--ink);
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.step-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  color: var(--ink);
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.step-pill {
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  padding: 0.32rem 0.65rem;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.step-pill-active {
+  background: var(--sun);
+}
+
+.page-title {
+  max-width: 44rem;
+  color: var(--ink);
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: clamp(2.6rem, 6vw, 5.7rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: 0;
+}
+
+.section-title {
+  color: var(--ink);
+  font-family: Georgia, "Palatino Linotype", serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.body-copy {
+  color: #5e6047;
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.hero-panel {
+  position: relative;
+  display: grid;
+  min-height: calc(100vh - 10rem);
+  place-items: center;
+  border: 3px solid var(--ink);
+  border-radius: 2rem 2rem 8rem 8rem;
+  background:
+    radial-gradient(circle at 15% 18%, var(--sun) 0 3.8rem, transparent 3.9rem),
+    radial-gradient(circle at 85% 18%, var(--sun) 0 3.8rem, transparent 3.9rem),
+    linear-gradient(135deg, rgba(120, 184, 173, 0.58), transparent 34%),
+    linear-gradient(225deg, rgba(238, 116, 99, 0.42), transparent 36%),
+    var(--paper);
+  padding: 3rem 1.25rem;
+  overflow: hidden;
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: 1rem;
+  border: 3px solid var(--ink);
+  border-bottom-left-radius: 7rem;
+  border-bottom-right-radius: 7rem;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  max-width: 48rem;
+  text-align: center;
+}
+
+.primary-action,
+.secondary-action {
+  min-height: 3rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.72rem 1.5rem;
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 900;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.primary-action {
+  background: var(--coral);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.secondary-action {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.primary-action:hover,
+.secondary-action:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.primary-action:disabled,
+.secondary-action:disabled {
+  cursor: not-allowed;
+  background: #d6c8a1;
+  color: #7a735d;
+  box-shadow: none;
+  transform: none;
+}
+
+.nouveau-card {
+  border: 3px solid var(--ink);
+  border-radius: 1.65rem;
+  background: var(--paper);
+  padding: 1rem;
+  box-shadow: 7px 7px 0 rgba(36, 48, 39, 0.18);
+}
+
+.choice-card {
+  border: 3px solid var(--ink);
+  border-radius: 1.45rem;
+  background: #fff4cc;
+  padding: 0.75rem;
+  text-align: left;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  box-shadow: 5px 5px 0 rgba(36, 48, 39, 0.15);
+}
+
+.choice-card:hover {
+  transform: translate(-1px, -1px);
+}
+
+.choice-card-selected {
+  background: var(--sun);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.preview-well {
+  border: 2px solid var(--ink);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(45deg, rgba(120, 184, 173, 0.16) 25%, transparent 25% 50%, rgba(238, 116, 99, 0.16) 50% 75%, transparent 75%),
+    var(--paper-deep);
+  background-size: 28px 28px;
+  padding: 1rem;
+}
+
+.camera-window {
+  position: relative;
+  margin-inline: auto;
+  max-height: 68vh;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  border-radius: 1.75rem 1.75rem 5rem 5rem;
+  background: #171510;
+  box-shadow: 8px 8px 0 rgba(36, 48, 39, 0.18);
+}
+
+.slot-card {
+  border: 2px solid var(--ink);
+  border-radius: 1.2rem;
+  background: var(--paper);
+  padding: 0.5rem;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.slot-card-active {
+  background: var(--sun);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.select-input {
+  min-height: 2.75rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  padding-inline: 1rem;
+  color: var(--ink);
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  border: 2px solid var(--ink);
+  border-radius: 1.25rem;
+  background: var(--teal);
+  padding: 0.35rem;
+}
+
+.mini-label {
+  color: #6f6a51;
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.ornament-band {
+  border: 2px solid var(--ink);
+  border-radius: 1rem;
+  background:
+    repeating-linear-gradient(90deg, var(--coral) 0 22px, var(--sun) 22px 44px, var(--teal) 44px 66px, var(--sage) 66px 88px);
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    padding: 1.5rem;
+  }
+
+  .site-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    padding: 2rem;
+  }
+
+  .app-frame {
+    padding: 1.5rem;
+  }
 }
