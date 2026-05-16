@@ -52,6 +52,7 @@ export default function Home() {
   const [downloadMode, setDownloadMode] = useState<DownloadMode>("image");
   const [filterId, setFilterId] = useState(PHOTO_FILTERS[0].id);
   const [frameDesignId, setFrameDesignId] = useState(FRAME_DESIGNS[0].id);
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [liveDownloadError, setLiveDownloadError] = useState<string | null>(
     null,
   );
@@ -504,9 +505,17 @@ export default function Home() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" data-theme={themeMode}>
       <div className="app-frame">
-        <AppHeader appStep={appStep} />
+        <AppHeader
+          appStep={appStep}
+          themeMode={themeMode}
+          onToggleTheme={() =>
+            setThemeMode((currentTheme) =>
+              currentTheme === "light" ? "dark" : "light",
+            )
+          }
+        />
 
         {appStep === "welcome" ? (
           <WelcomeScreen onStart={() => setAppStep("frames")} />

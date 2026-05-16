@@ -29,6 +29,8 @@ import {
 
 type HeaderProps = {
   appStep: AppStep;
+  themeMode: "light" | "dark";
+  onToggleTheme: () => void;
 };
 
 type WelcomeScreenProps = {
@@ -93,41 +95,80 @@ type CaptureNextPanelProps = {
   onContinue: () => void;
 };
 
-export function AppHeader({ appStep }: HeaderProps) {
+export function AppHeader({ appStep, themeMode, onToggleTheme }: HeaderProps) {
   return (
     <header className="site-header">
       <p className="brand-mark">Snap Pop</p>
-      <div className="step-list">
-        <span
-          className={`step-pill ${
-            appStep === "welcome" ? "step-pill-active" : ""
-          }`}
+      <div className="header-controls">
+        <div className="step-list">
+          <span
+            className={`step-pill ${
+              appStep === "welcome" ? "step-pill-active" : ""
+            }`}
+          >
+            Welcome
+          </span>
+          <span
+            className={`step-pill ${
+              appStep === "frames" ? "step-pill-active" : ""
+            }`}
+          >
+            Layout
+          </span>
+          <span
+            className={`step-pill ${
+              appStep === "capture" ? "step-pill-active" : ""
+            }`}
+          >
+            Capture
+          </span>
+          <span
+            className={`step-pill ${
+              appStep === "finish" ? "step-pill-active" : ""
+            }`}
+          >
+            Finish
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleTheme}
+          className="theme-toggle"
+          aria-label={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}
         >
-          Welcome
-        </span>
-        <span
-          className={`step-pill ${
-            appStep === "frames" ? "step-pill-active" : ""
-          }`}
-        >
-          Layout
-        </span>
-        <span
-          className={`step-pill ${
-            appStep === "capture" ? "step-pill-active" : ""
-          }`}
-        >
-          Capture
-        </span>
-        <span
-          className={`step-pill ${
-            appStep === "finish" ? "step-pill-active" : ""
-          }`}
-        >
-          Finish
-        </span>
+          {themeMode === "light" ? (
+            <SunIcon />
+          ) : (
+            <MoonIcon />
+          )}
+        </button>
       </div>
     </header>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg
+      className="theme-toggle-icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      className="theme-toggle-icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path d="M20.2 14.7A8.1 8.1 0 0 1 9.3 3.8a8.1 8.1 0 1 0 10.9 10.9Z" />
+    </svg>
   );
 }
 
