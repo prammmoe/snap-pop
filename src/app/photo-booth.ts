@@ -1,12 +1,21 @@
 export type CameraState = "loading" | "ready" | "blocked" | "unsupported";
 export type DownloadMode = "image" | "video";
-export type AppStep = "welcome" | "frames" | "capture";
+export type AppStep = "welcome" | "frames" | "capture" | "finish";
 
 export type PhotoFilter = {
   id: string;
   name: string;
   canvasFilter: string;
   previewFilter: string;
+};
+
+export type FrameDesign = {
+  id: string;
+  name: string;
+  description: string;
+  background: string;
+  accent: string;
+  secondary: string;
 };
 
 export type LiveClip = {
@@ -141,6 +150,73 @@ export const PHOTO_FILTERS: PhotoFilter[] = [
   },
 ];
 
+export const FRAME_DESIGNS: FrameDesign[] = [
+  {
+    id: "clean",
+    name: "Clean Booth",
+    description: "Minimal border with a soft studio finish.",
+    background: "#fffaf2",
+    accent: "#201c18",
+    secondary: "#eadfce",
+  },
+  {
+    id: "candy-pet",
+    name: "Candy Pet",
+    description: "Bright strip color, sticker tape, and playful paw marks.",
+    background: "#ffb21a",
+    accent: "#ffffff",
+    secondary: "#f56fae",
+  },
+  {
+    id: "checker-pop",
+    name: "Checker Pop",
+    description: "Blue checker bands, comic eyes, and yellow starbursts.",
+    background: "#f4f7ff",
+    accent: "#24388f",
+    secondary: "#ffe51f",
+  },
+  {
+    id: "manga-event",
+    name: "Manga Event",
+    description: "Poster-style red and navy blocks with comic motion.",
+    background: "#f6f1df",
+    accent: "#1f3d8f",
+    secondary: "#e84536",
+  },
+  {
+    id: "vintage-stamp",
+    name: "Vintage Stamp",
+    description: "Layered postage edges with muted heritage colors.",
+    background: "#efe6cf",
+    accent: "#1f5b42",
+    secondary: "#d8a832",
+  },
+  {
+    id: "lotus-jade",
+    name: "Lotus Jade",
+    description: "Teal and gold ornamental frame with lotus details.",
+    background: "#0f716b",
+    accent: "#e4bd63",
+    secondary: "#e96d74",
+  },
+  {
+    id: "sun-carnival",
+    name: "Sun Carnival",
+    description: "Colorful arch, striped edges, stars, and banner curves.",
+    background: "#ffe7a8",
+    accent: "#ee675b",
+    secondary: "#2f7f5b",
+  },
+  {
+    id: "storybook-bloom",
+    name: "Storybook Bloom",
+    description: "Hand-drawn flowers, ribbons, sun, and soft blue border.",
+    background: "#ffffff",
+    accent: "#3d6da7",
+    secondary: "#c72572",
+  },
+];
+
 export function createEmptyPhotos(count: number) {
   return Array.from({ length: count }, () => null) as (string | null)[];
 }
@@ -157,6 +233,10 @@ export function getTemplateById(id: string) {
 
 export function getFilterById(id: string) {
   return PHOTO_FILTERS.find((filter) => filter.id === id) ?? PHOTO_FILTERS[0];
+}
+
+export function getFrameDesignById(id: string) {
+  return FRAME_DESIGNS.find((design) => design.id === id) ?? FRAME_DESIGNS[0];
 }
 
 export function getTemplateRows(template: FrameTemplate) {
@@ -291,9 +371,11 @@ export function createCapturedPhotoCanvas(
 export function drawStripBase(
   context: CanvasRenderingContext2D,
   template: FrameTemplate,
+  frameDesign: FrameDesign,
   metrics: StripMetrics,
 ) {
-  context.fillStyle = template.background;
+  context.fillStyle =
+    frameDesign.id === "clean" ? template.background : frameDesign.background;
   context.fillRect(0, 0, metrics.stripWidth, metrics.stripHeight);
   context.fillStyle = template.ink;
   context.font = `600 ${Math.round(metrics.stripWidth * 0.05)}px Avenir Next, Trebuchet MS, sans-serif`;
@@ -329,4 +411,577 @@ export function drawStripFrame(
   context.filter = canvasFilter;
   context.drawImage(image, x, y, metrics.frameWidth, metrics.frameHeight);
   context.filter = "none";
+}
+
+export function drawFrameDesign(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  switch (design.id) {
+    case "candy-pet":
+      drawCandyPetFrame(context, design, metrics);
+      break;
+    case "checker-pop":
+      drawCheckerPopFrame(context, design, metrics);
+      break;
+    case "manga-event":
+      drawMangaEventFrame(context, design, metrics);
+      break;
+    case "vintage-stamp":
+      drawVintageStampFrame(context, design, metrics);
+      break;
+    case "lotus-jade":
+      drawLotusJadeFrame(context, design, metrics);
+      break;
+    case "sun-carnival":
+      drawSunCarnivalFrame(context, design, metrics);
+      break;
+    case "storybook-bloom":
+      drawStorybookBloomFrame(context, design, metrics);
+      break;
+    default:
+      drawCleanFrame(context, design, metrics);
+  }
+}
+
+function drawCleanFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  context.strokeStyle = design.secondary;
+  context.lineWidth = Math.max(4, metrics.stripWidth * 0.006);
+  context.strokeRect(
+    metrics.padding * 0.38,
+    metrics.padding * 0.38,
+    metrics.stripWidth - metrics.padding * 0.76,
+    metrics.stripHeight - metrics.padding * 0.76,
+  );
+}
+
+function drawCandyPetFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  drawSideRails(context, metrics, "#e69400", metrics.padding * 0.26);
+  drawTape(context, metrics.stripWidth * 0.53, metrics.padding * 0.78, design.secondary);
+  drawBubbleText(context, "SNAP POP", metrics.stripWidth / 2, metrics.stripHeight - metrics.padding * 0.55, design.accent);
+
+  for (let index = 0; index < 10; index += 1) {
+    drawPaw(
+      context,
+      index % 2 === 0 ? metrics.padding * 0.54 : metrics.stripWidth - metrics.padding * 0.54,
+      metrics.padding * (1.8 + index * 0.45),
+      metrics.stripWidth * 0.018,
+      design.accent,
+    );
+  }
+}
+
+function drawCheckerPopFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  const band = metrics.padding * 0.26;
+  drawCheckerBand(context, 0, 0, metrics.stripWidth, band, design.accent, "#ffffff");
+  drawCheckerBand(
+    context,
+    0,
+    metrics.stripHeight - band,
+    metrics.stripWidth,
+    band,
+    design.accent,
+    "#ffffff",
+  );
+  drawStar(context, metrics.padding * 0.72, metrics.padding * 1.55, 9, metrics.padding * 0.22, metrics.padding * 0.1, design.secondary, "#201c18");
+  drawStar(context, metrics.stripWidth - metrics.padding * 0.68, metrics.stripHeight - metrics.padding * 1.35, 9, metrics.padding * 0.25, metrics.padding * 0.1, design.secondary, "#201c18");
+  drawEyes(context, metrics.stripWidth - metrics.padding * 0.62, metrics.padding * 1.04, metrics.padding * 0.16);
+  drawBubbleText(context, "this moment.", metrics.stripWidth / 2, metrics.stripHeight - metrics.padding * 0.54, "#201c18");
+}
+
+function drawMangaEventFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  const side = metrics.padding * 0.28;
+  context.fillStyle = design.accent;
+  context.fillRect(0, 0, side, metrics.stripHeight);
+  context.fillStyle = design.secondary;
+  context.fillRect(metrics.stripWidth - side, 0, side, metrics.stripHeight);
+  drawCheckerBand(context, metrics.stripWidth - side, 0, side, metrics.stripHeight, design.accent, "#ffffff");
+  drawStar(context, metrics.stripWidth * 0.22, metrics.padding * 0.8, 12, metrics.padding * 0.34, metrics.padding * 0.16, design.secondary, design.accent);
+  drawRibbon(context, metrics.stripWidth * 0.58, metrics.padding * 0.55, metrics.stripWidth * 0.32, metrics.padding * 0.18, design.accent);
+  drawBubbleText(context, "PHOTOBOOTH", metrics.stripWidth / 2, metrics.stripHeight - metrics.padding * 0.55, design.accent);
+}
+
+function drawVintageStampFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  drawPerforatedBorder(context, metrics, "#f7f0d4", "#b9b09c");
+  drawRotatedStamp(context, metrics.padding * 0.78, metrics.padding * 1.36, metrics.padding * 0.78, metrics.padding * 1.04, design.secondary, design.accent, -0.18);
+  drawRotatedStamp(context, metrics.stripWidth - metrics.padding * 0.78, metrics.padding * 1.48, metrics.padding * 0.72, metrics.padding, "#c9544b", design.secondary, 0.17);
+  drawBubbleText(context, "2026", metrics.stripWidth - metrics.padding * 0.8, metrics.padding * 0.74, design.accent);
+}
+
+function drawLotusJadeFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  const inset = metrics.padding * 0.24;
+  context.strokeStyle = design.accent;
+  context.lineWidth = Math.max(5, metrics.stripWidth * 0.008);
+  context.strokeRect(inset, inset, metrics.stripWidth - inset * 2, metrics.stripHeight - inset * 2);
+  drawCloudRow(context, metrics.stripWidth / 2, metrics.padding * 0.55, metrics.padding * 0.22, design.accent);
+  drawLotus(context, metrics.stripWidth * 0.28, metrics.stripHeight - metrics.padding * 0.7, metrics.padding * 0.28, design.secondary, design.accent);
+  drawLotus(context, metrics.stripWidth * 0.72, metrics.stripHeight - metrics.padding * 0.82, metrics.padding * 0.24, design.secondary, design.accent);
+  drawSideMedallions(context, metrics.padding * 0.52, metrics.stripHeight / 2, metrics.padding * 0.16, design.accent, "#67c4c8");
+  drawSideMedallions(context, metrics.stripWidth - metrics.padding * 0.52, metrics.stripHeight / 2, metrics.padding * 0.16, design.accent, "#67c4c8");
+}
+
+function drawSunCarnivalFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  drawVerticalStripes(context, 0, 0, metrics.stripWidth, metrics.padding * 0.28, design.secondary, "#ffffff");
+  drawVerticalStripes(
+    context,
+    0,
+    metrics.stripHeight - metrics.padding * 0.28,
+    metrics.stripWidth,
+    metrics.padding * 0.28,
+    design.secondary,
+    "#ffffff",
+  );
+  drawArc(context, metrics.stripWidth / 2, metrics.padding * 2.18, metrics.stripWidth * 0.34, design.accent, metrics.padding * 0.16);
+  drawSun(context, metrics.stripWidth / 2, metrics.padding * 0.88, metrics.padding * 0.28, "#f6b83f", "#201c18");
+  drawFlower(context, metrics.padding * 0.58, metrics.stripHeight - metrics.padding * 0.78, metrics.padding * 0.18, "#f7758e", design.secondary);
+  drawFlower(context, metrics.stripWidth - metrics.padding * 0.58, metrics.stripHeight - metrics.padding * 0.78, metrics.padding * 0.18, "#f7758e", design.secondary);
+  drawRibbon(context, metrics.stripWidth / 2, metrics.stripHeight - metrics.padding * 0.5, metrics.stripWidth * 0.4, metrics.padding * 0.22, "#fff2c6");
+}
+
+function drawStorybookBloomFrame(
+  context: CanvasRenderingContext2D,
+  design: FrameDesign,
+  metrics: StripMetrics,
+) {
+  context.strokeStyle = design.accent;
+  context.lineWidth = Math.max(5, metrics.stripWidth * 0.008);
+  context.strokeRect(metrics.padding * 0.24, metrics.padding * 0.24, metrics.stripWidth - metrics.padding * 0.48, metrics.stripHeight - metrics.padding * 0.48);
+  drawSun(context, metrics.stripWidth / 2, metrics.padding * 0.62, metrics.padding * 0.24, "#f4b23c", design.accent);
+  drawRibbon(context, metrics.stripWidth / 2, metrics.padding * 0.92, metrics.stripWidth * 0.48, metrics.padding * 0.18, design.secondary);
+  drawFlower(context, metrics.padding * 0.58, metrics.padding * 1.45, metrics.padding * 0.15, "#f082a7", "#6a8d3a");
+  drawFlower(context, metrics.stripWidth - metrics.padding * 0.58, metrics.padding * 1.45, metrics.padding * 0.15, "#f082a7", "#6a8d3a");
+  drawFlower(context, metrics.stripWidth * 0.38, metrics.stripHeight - metrics.padding * 0.54, metrics.padding * 0.14, "#f082a7", "#6a8d3a");
+  drawFlower(context, metrics.stripWidth * 0.62, metrics.stripHeight - metrics.padding * 0.54, metrics.padding * 0.14, "#f082a7", "#6a8d3a");
+  drawDove(context, metrics.padding * 0.62, metrics.stripHeight - metrics.padding * 1.15, metrics.padding * 0.18, design.accent);
+  drawDove(context, metrics.stripWidth - metrics.padding * 0.62, metrics.stripHeight - metrics.padding * 1.15, metrics.padding * 0.18, design.accent);
+}
+
+function drawSideRails(
+  context: CanvasRenderingContext2D,
+  metrics: StripMetrics,
+  color: string,
+  width: number,
+) {
+  context.fillStyle = color;
+  context.fillRect(0, 0, width, metrics.stripHeight);
+  context.fillRect(metrics.stripWidth - width, 0, width, metrics.stripHeight);
+}
+
+function drawCheckerBand(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  firstColor: string,
+  secondColor: string,
+) {
+  const size = Math.max(12, Math.min(width, height) / 2);
+  const columns = Math.ceil(width / size);
+  const rows = Math.ceil(height / size);
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      context.fillStyle = (row + column) % 2 === 0 ? firstColor : secondColor;
+      context.fillRect(x + column * size, y + row * size, size, size);
+    }
+  }
+}
+
+function drawVerticalStripes(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  firstColor: string,
+  secondColor: string,
+) {
+  const stripeWidth = Math.max(16, width / 12);
+  const stripes = Math.ceil(width / stripeWidth);
+
+  for (let index = 0; index < stripes; index += 1) {
+    context.fillStyle = index % 2 === 0 ? firstColor : secondColor;
+    context.fillRect(x + index * stripeWidth, y, stripeWidth, height);
+  }
+}
+
+function drawStar(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  points: number,
+  outerRadius: number,
+  innerRadius: number,
+  fill: string,
+  stroke: string,
+) {
+  context.beginPath();
+
+  for (let index = 0; index < points * 2; index += 1) {
+    const radius = index % 2 === 0 ? outerRadius : innerRadius;
+    const angle = (Math.PI * index) / points - Math.PI / 2;
+    const x = centerX + Math.cos(angle) * radius;
+    const y = centerY + Math.sin(angle) * radius;
+
+    if (index === 0) {
+      context.moveTo(x, y);
+    } else {
+      context.lineTo(x, y);
+    }
+  }
+
+  context.closePath();
+  context.fillStyle = fill;
+  context.fill();
+  context.strokeStyle = stroke;
+  context.lineWidth = Math.max(2, outerRadius * 0.08);
+  context.stroke();
+}
+
+function drawPaw(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  color: string,
+) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.ellipse(centerX, centerY + radius * 0.35, radius, radius * 0.8, 0, 0, Math.PI * 2);
+  context.fill();
+
+  for (let index = 0; index < 4; index += 1) {
+    const offsetX = (index - 1.5) * radius * 0.62;
+    const offsetY = index === 1 || index === 2 ? -radius * 0.58 : -radius * 0.25;
+    context.beginPath();
+    context.arc(centerX + offsetX, centerY + offsetY, radius * 0.32, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function drawTape(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  color: string,
+) {
+  context.save();
+  context.translate(centerX, centerY);
+  context.rotate(-0.16);
+  context.fillStyle = "#fff7fb";
+  context.strokeStyle = color;
+  context.lineWidth = 4;
+  context.fillRect(-110, -24, 220, 48);
+  context.strokeRect(-110, -24, 220, 48);
+  context.restore();
+}
+
+function drawBubbleText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  color: string,
+) {
+  context.fillStyle = color;
+  context.textAlign = "center";
+  context.font = "800 34px Avenir Next, Trebuchet MS, sans-serif";
+  context.fillText(text, x, y);
+}
+
+function drawEyes(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+) {
+  for (const offset of [-radius * 0.72, radius * 0.72]) {
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.ellipse(centerX + offset, centerY, radius * 0.55, radius * 0.8, 0, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = "#201c18";
+    context.lineWidth = 2;
+    context.stroke();
+    context.fillStyle = "#201c18";
+    context.beginPath();
+    context.arc(centerX + offset + radius * 0.18, centerY, radius * 0.22, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function drawRibbon(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  width: number,
+  height: number,
+  color: string,
+) {
+  context.save();
+  context.translate(centerX, centerY);
+  context.rotate(-0.08);
+  context.fillStyle = color;
+  context.strokeStyle = "#201c18";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(-width / 2, -height / 2);
+  context.lineTo(width / 2, -height / 2);
+  context.lineTo(width / 2 - height * 0.5, 0);
+  context.lineTo(width / 2, height / 2);
+  context.lineTo(-width / 2, height / 2);
+  context.lineTo(-width / 2 + height * 0.5, 0);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.restore();
+}
+
+function drawPerforatedBorder(
+  context: CanvasRenderingContext2D,
+  metrics: StripMetrics,
+  holeColor: string,
+  strokeColor: string,
+) {
+  const inset = metrics.padding * 0.22;
+  const radius = metrics.padding * 0.07;
+  const step = radius * 2.5;
+
+  context.strokeStyle = strokeColor;
+  context.lineWidth = 3;
+  context.strokeRect(inset, inset, metrics.stripWidth - inset * 2, metrics.stripHeight - inset * 2);
+  context.fillStyle = holeColor;
+
+  for (let x = inset; x <= metrics.stripWidth - inset; x += step) {
+    punchCircle(context, x, inset, radius);
+    punchCircle(context, x, metrics.stripHeight - inset, radius);
+  }
+
+  for (let y = inset; y <= metrics.stripHeight - inset; y += step) {
+    punchCircle(context, inset, y, radius);
+    punchCircle(context, metrics.stripWidth - inset, y, radius);
+  }
+}
+
+function punchCircle(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+) {
+  context.beginPath();
+  context.arc(x, y, radius, 0, Math.PI * 2);
+  context.fill();
+}
+
+function drawRotatedStamp(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  width: number,
+  height: number,
+  fill: string,
+  stroke: string,
+  rotation: number,
+) {
+  context.save();
+  context.translate(centerX, centerY);
+  context.rotate(rotation);
+  context.fillStyle = fill;
+  context.strokeStyle = stroke;
+  context.lineWidth = 4;
+  context.fillRect(-width / 2, -height / 2, width, height);
+  context.strokeRect(-width / 2, -height / 2, width, height);
+  context.fillStyle = stroke;
+  context.font = "700 24px Avenir Next, Trebuchet MS, sans-serif";
+  context.textAlign = "center";
+  context.fillText("STAMP", 0, height * 0.16);
+  context.restore();
+}
+
+function drawCloudRow(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  color: string,
+) {
+  context.fillStyle = color;
+
+  for (let index = -3; index <= 3; index += 1) {
+    context.beginPath();
+    context.arc(centerX + index * radius * 1.25, centerY, radius, Math.PI, 0);
+    context.lineTo(centerX + index * radius * 1.25 + radius, centerY + radius * 0.42);
+    context.lineTo(centerX + index * radius * 1.25 - radius, centerY + radius * 0.42);
+    context.closePath();
+    context.fill();
+  }
+}
+
+function drawLotus(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  petalColor: string,
+  strokeColor: string,
+) {
+  context.strokeStyle = strokeColor;
+  context.lineWidth = 3;
+
+  for (let index = -2; index <= 2; index += 1) {
+    context.save();
+    context.translate(centerX, centerY);
+    context.rotate(index * 0.34);
+    context.beginPath();
+    context.ellipse(0, -radius * 0.45, radius * 0.35, radius, 0, 0, Math.PI * 2);
+    context.fillStyle = petalColor;
+    context.fill();
+    context.stroke();
+    context.restore();
+  }
+}
+
+function drawSideMedallions(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  stroke: string,
+  fill: string,
+) {
+  for (let index = -2; index <= 2; index += 1) {
+    context.beginPath();
+    context.arc(centerX, centerY + index * radius * 2.4, radius, 0, Math.PI * 2);
+    context.fillStyle = fill;
+    context.fill();
+    context.strokeStyle = stroke;
+    context.lineWidth = 4;
+    context.stroke();
+  }
+}
+
+function drawArc(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  color: string,
+  lineWidth: number,
+) {
+  context.strokeStyle = color;
+  context.lineWidth = lineWidth;
+  context.beginPath();
+  context.arc(centerX, centerY, radius, Math.PI * 1.08, Math.PI * 1.92);
+  context.stroke();
+}
+
+function drawSun(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  fill: string,
+  stroke: string,
+) {
+  drawStar(context, centerX, centerY, 18, radius * 1.55, radius, fill, stroke);
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  context.fillStyle = fill;
+  context.fill();
+  context.strokeStyle = stroke;
+  context.lineWidth = 3;
+  context.stroke();
+}
+
+function drawFlower(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  petalColor: string,
+  leafColor: string,
+) {
+  context.fillStyle = leafColor;
+  context.beginPath();
+  context.ellipse(centerX - radius * 1.1, centerY + radius * 0.7, radius * 0.4, radius, -0.8, 0, Math.PI * 2);
+  context.fill();
+  context.beginPath();
+  context.ellipse(centerX + radius * 1.1, centerY + radius * 0.7, radius * 0.4, radius, 0.8, 0, Math.PI * 2);
+  context.fill();
+
+  for (let index = 0; index < 6; index += 1) {
+    const angle = (Math.PI * 2 * index) / 6;
+    context.beginPath();
+    context.ellipse(
+      centerX + Math.cos(angle) * radius * 0.58,
+      centerY + Math.sin(angle) * radius * 0.58,
+      radius * 0.42,
+      radius * 0.68,
+      angle,
+      0,
+      Math.PI * 2,
+    );
+    context.fillStyle = petalColor;
+    context.fill();
+  }
+
+  context.beginPath();
+  context.arc(centerX, centerY, radius * 0.36, 0, Math.PI * 2);
+  context.fillStyle = "#f5c544";
+  context.fill();
+}
+
+function drawDove(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  stroke: string,
+) {
+  context.strokeStyle = stroke;
+  context.lineWidth = 3;
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.ellipse(centerX, centerY, radius, radius * 0.55, 0, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+  context.beginPath();
+  context.ellipse(centerX - radius * 0.55, centerY - radius * 0.38, radius * 0.82, radius * 0.34, -0.6, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+  context.beginPath();
+  context.ellipse(centerX + radius * 0.8, centerY - radius * 0.12, radius * 0.32, radius * 0.26, 0, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
 }
