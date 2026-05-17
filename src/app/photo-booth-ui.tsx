@@ -68,13 +68,16 @@ type PreviewPanelProps = {
 };
 
 type FinishPreviewPanelProps = {
+  borderColor: string;
   photos: (string | null)[];
   selectedFilter: PhotoFilter;
   selectedFrameDesign: FrameDesign;
   selectedTemplate: FrameTemplate;
+  showWhiteBorder: boolean;
 };
 
 type FilterDownloadPanelProps = {
+  borderColor: string;
   canDownloadLiveClips: boolean;
   downloadMode: DownloadMode;
   frameColor: string;
@@ -84,10 +87,13 @@ type FilterDownloadPanelProps = {
   selectedFrameDesign: FrameDesign;
   selectedFilter: PhotoFilter;
   selectedTemplate: FrameTemplate;
+  showWhiteBorder: boolean;
   onDownload: () => void;
+  onSelectBorderColor: (borderColor: string) => void;
   onSelectFrameColor: (frameColor: string) => void;
   onSelectDownloadMode: (mode: DownloadMode) => void;
   onSelectFilter: (filterId: string) => void;
+  onToggleWhiteBorder: (showWhiteBorder: boolean) => void;
 };
 
 type CaptureNextPanelProps = {
@@ -395,10 +401,12 @@ export function CaptureNextPanel({
 }
 
 export function FinishPreviewPanel({
+  borderColor,
   photos,
   selectedFilter,
   selectedFrameDesign,
   selectedTemplate,
+  showWhiteBorder,
 }: FinishPreviewPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const metrics = useMemo(
@@ -441,6 +449,8 @@ export function FinishPreviewPanel({
           selectedTemplate,
           metrics,
           selectedFilter.canvasFilter,
+          showWhiteBorder,
+          borderColor,
         );
       });
       drawFrameDesign(previewContext, selectedFrameDesign, metrics);
@@ -451,7 +461,7 @@ export function FinishPreviewPanel({
     return () => {
       cancelled = true;
     };
-  }, [metrics, photos, selectedFilter, selectedFrameDesign, selectedTemplate]);
+  }, [borderColor, metrics, photos, selectedFilter, selectedFrameDesign, selectedTemplate, showWhiteBorder]);
 
   return (
     <section className="nouveau-card">
@@ -476,6 +486,7 @@ export function FinishPreviewPanel({
 }
 
 export function FilterDownloadPanel({
+  borderColor,
   canDownloadLiveClips,
   downloadMode,
   frameColor,
@@ -485,10 +496,13 @@ export function FilterDownloadPanel({
   selectedFrameDesign,
   selectedFilter,
   selectedTemplate,
+  showWhiteBorder,
   onDownload,
+  onSelectBorderColor,
   onSelectFrameColor,
   onSelectDownloadMode,
   onSelectFilter,
+  onToggleWhiteBorder,
 }: FilterDownloadPanelProps) {
   const canDownload =
     downloadMode === "image" ? isStripComplete : canDownloadLiveClips;
@@ -541,6 +555,50 @@ export function FilterDownloadPanel({
                 aria-label="Choose a custom frame color"
               />
             </div>
+            <label className="toggle-field">
+              <span>Photo border</span>
+              <input
+                type="checkbox"
+                checked={showWhiteBorder}
+                onChange={(event) => onToggleWhiteBorder(event.target.checked)}
+              />
+            </label>
+            {showWhiteBorder ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4 px-1">
+                  <h3 className="text-sm font-black uppercase tracking-[0.08em]">
+                    Border color
+                  </h3>
+                  <span className="mini-label">{borderColor.toUpperCase()}</span>
+                </div>
+                <div className="frame-color-grid">
+                  {FRAME_COLOR_OPTIONS.map((colorOption) => (
+                    <button
+                      key={colorOption.value}
+                      type="button"
+                      onClick={() => onSelectBorderColor(colorOption.value)}
+                      className={`frame-color-swatch ${
+                        borderColor === colorOption.value ? "frame-color-swatch-selected" : ""
+                      }`}
+                      style={{ backgroundColor: colorOption.value }}
+                      aria-label={`Use ${colorOption.name} border color`}
+                    >
+                      <span>{colorOption.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="color-picker-field">
+                  <label htmlFor="border-color-picker">Custom border</label>
+                  <input
+                    id="border-color-picker"
+                    type="color"
+                    value={borderColor}
+                    onChange={(event) => onSelectBorderColor(event.target.value)}
+                    aria-label="Choose a custom border color"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-4 px-1">
