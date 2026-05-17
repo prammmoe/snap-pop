@@ -18,6 +18,11 @@ export type FrameDesign = {
   secondary: string;
 };
 
+export type FrameColorOption = {
+  name: string;
+  value: string;
+};
+
 export type LiveClip = {
   blob: Blob;
   url: string;
@@ -148,73 +153,63 @@ export const PHOTO_FILTERS: PhotoFilter[] = [
     canvasFilter: "contrast(1.08) saturate(1.2) brightness(1.03)",
     previewFilter: "contrast(1.08) saturate(1.2) brightness(1.03)",
   },
+  {
+    id: "kodak-gold-200",
+    name: "Kodak Gold 200",
+    canvasFilter: "sepia(0.18) saturate(1.24) contrast(1.05) brightness(1.05) hue-rotate(-5deg)",
+    previewFilter: "sepia(0.18) saturate(1.24) contrast(1.05) brightness(1.05) hue-rotate(-5deg)",
+  },
+  {
+    id: "kodak-portra-400",
+    name: "Kodak Portra 400",
+    canvasFilter: "sepia(0.12) saturate(0.92) contrast(0.96) brightness(1.06) hue-rotate(-3deg)",
+    previewFilter: "sepia(0.12) saturate(0.92) contrast(0.96) brightness(1.06) hue-rotate(-3deg)",
+  },
+  {
+    id: "kodak-ektar-100",
+    name: "Kodak Ektar 100",
+    canvasFilter: "saturate(1.34) contrast(1.12) brightness(1.02) hue-rotate(-7deg)",
+    previewFilter: "saturate(1.34) contrast(1.12) brightness(1.02) hue-rotate(-7deg)",
+  },
+  {
+    id: "fuji-pro-400h",
+    name: "Fuji Pro 400H",
+    canvasFilter: "saturate(0.94) contrast(0.98) brightness(1.08) hue-rotate(8deg)",
+    previewFilter: "saturate(0.94) contrast(0.98) brightness(1.08) hue-rotate(8deg)",
+  },
+  {
+    id: "fuji-velvia-50",
+    name: "Fuji Velvia 50",
+    canvasFilter: "saturate(1.42) contrast(1.16) brightness(0.99) hue-rotate(5deg)",
+    previewFilter: "saturate(1.42) contrast(1.16) brightness(0.99) hue-rotate(5deg)",
+  },
+  {
+    id: "cinestill-800t",
+    name: "CineStill 800T",
+    canvasFilter: "saturate(1.22) contrast(1.08) brightness(0.98) hue-rotate(14deg)",
+    previewFilter: "saturate(1.22) contrast(1.08) brightness(0.98) hue-rotate(14deg)",
+  },
+  {
+    id: "ilford-hp5-plus-400",
+    name: "Ilford HP5 400",
+    canvasFilter: "grayscale(1) contrast(1.22) brightness(1.02)",
+    previewFilter: "grayscale(1) contrast(1.22) brightness(1.02)",
+  },
+  {
+    id: "kodak-tri-x-400",
+    name: "Kodak Tri-X 400",
+    canvasFilter: "grayscale(1) contrast(1.34) brightness(0.96)",
+    previewFilter: "grayscale(1) contrast(1.34) brightness(0.96)",
+  },
 ];
 
-export const FRAME_DESIGNS: FrameDesign[] = [
-  {
-    id: "clean",
-    name: "Clean Booth",
-    description: "Minimal border with a soft studio finish.",
-    background: "#fffaf2",
-    accent: "#201c18",
-    secondary: "#eadfce",
-  },
-  {
-    id: "candy-pet",
-    name: "Candy Pet",
-    description: "Bright strip color, sticker tape, and playful paw marks.",
-    background: "#ffb21a",
-    accent: "#ffffff",
-    secondary: "#f56fae",
-  },
-  {
-    id: "checker-pop",
-    name: "Checker Pop",
-    description: "Blue checker bands, comic eyes, and yellow starbursts.",
-    background: "#f4f7ff",
-    accent: "#24388f",
-    secondary: "#ffe51f",
-  },
-  {
-    id: "manga-event",
-    name: "Manga Event",
-    description: "Poster-style red and navy blocks with comic motion.",
-    background: "#f6f1df",
-    accent: "#1f3d8f",
-    secondary: "#e84536",
-  },
-  {
-    id: "vintage-stamp",
-    name: "Vintage Stamp",
-    description: "Layered postage edges with muted heritage colors.",
-    background: "#efe6cf",
-    accent: "#1f5b42",
-    secondary: "#d8a832",
-  },
-  {
-    id: "lotus-jade",
-    name: "Lotus Jade",
-    description: "Teal and gold ornamental frame with lotus details.",
-    background: "#0f716b",
-    accent: "#e4bd63",
-    secondary: "#e96d74",
-  },
-  {
-    id: "sun-carnival",
-    name: "Sun Carnival",
-    description: "Colorful arch, striped edges, stars, and banner curves.",
-    background: "#ffe7a8",
-    accent: "#ee675b",
-    secondary: "#2f7f5b",
-  },
-  {
-    id: "storybook-bloom",
-    name: "Storybook Bloom",
-    description: "Hand-drawn flowers, ribbons, sun, and soft blue border.",
-    background: "#ffffff",
-    accent: "#3d6da7",
-    secondary: "#c72572",
-  },
+export const FRAME_COLOR_OPTIONS: FrameColorOption[] = [
+  { name: "Cream", value: "#fffaf2" },
+  { name: "Blush", value: "#ffd6df" },
+  { name: "Sun", value: "#ffe071" },
+  { name: "Mint", value: "#bfe8d4" },
+  { name: "Sky", value: "#cfe5ff" },
+  { name: "Ink", value: "#201c18" },
 ];
 
 export function createEmptyPhotos(count: number) {
@@ -235,8 +230,18 @@ export function getFilterById(id: string) {
   return PHOTO_FILTERS.find((filter) => filter.id === id) ?? PHOTO_FILTERS[0];
 }
 
-export function getFrameDesignById(id: string) {
-  return FRAME_DESIGNS.find((design) => design.id === id) ?? FRAME_DESIGNS[0];
+export function createFrameDesign(frameColor: string): FrameDesign {
+  const background = normalizeHexColor(frameColor);
+  const accent = getReadableColor(background);
+
+  return {
+    id: "color-frame",
+    name: "Color Frame",
+    description: "Minimal frame with your selected color.",
+    background,
+    accent,
+    secondary: accent,
+  };
 }
 
 export function getTemplateRows(template: FrameTemplate) {
@@ -269,7 +274,7 @@ export function getStripMetrics(template: FrameTemplate): StripMetrics {
   const stripWidth = template.outputWidth;
   const padding = Math.round(stripWidth * 0.075);
   const gap = Math.round(stripWidth * 0.032);
-  const labelHeight = Math.round(stripWidth * 0.12);
+  const labelHeight = 0;
   const contentWidth = stripWidth - padding * 2;
   const rows = getTemplateRows(template);
   const frameWidth = Math.floor(
@@ -370,24 +375,24 @@ export function createCapturedPhotoCanvas(
 
 export function drawStripBase(
   context: CanvasRenderingContext2D,
-  template: FrameTemplate,
   frameDesign: FrameDesign,
   metrics: StripMetrics,
 ) {
-  context.fillStyle =
-    frameDesign.id === "clean" ? template.background : frameDesign.background;
+  context.fillStyle = frameDesign.background;
   context.fillRect(0, 0, metrics.stripWidth, metrics.stripHeight);
-  context.fillStyle = template.ink;
-  context.font = `600 ${Math.round(metrics.stripWidth * 0.05)}px Avenir Next, Trebuchet MS, sans-serif`;
-  context.textAlign = "center";
-  context.fillText("Snap Pop", metrics.stripWidth / 2, metrics.padding * 0.86);
-  context.fillStyle = template.accent;
-  context.font = `500 ${Math.round(metrics.stripWidth * 0.022)}px Avenir Next, Trebuchet MS, sans-serif`;
-  context.fillText(
-    template.name,
-    metrics.stripWidth / 2,
-    metrics.padding * 1.24,
-  );
+}
+
+function normalizeHexColor(color: string) {
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : FRAME_COLOR_OPTIONS[0].value;
+}
+
+function getReadableColor(hexColor: string) {
+  const red = Number.parseInt(hexColor.slice(1, 3), 16) / 255;
+  const green = Number.parseInt(hexColor.slice(3, 5), 16) / 255;
+  const blue = Number.parseInt(hexColor.slice(5, 7), 16) / 255;
+  const luminance = red * 0.299 + green * 0.587 + blue * 0.114;
+
+  return luminance > 0.52 ? "#201c18" : "#fffaf2";
 }
 
 export function drawStripFrame(
@@ -419,6 +424,8 @@ export function drawFrameDesign(
   metrics: StripMetrics,
 ) {
   switch (design.id) {
+    case "color-frame":
+      break;
     case "candy-pet":
       drawCandyPetFrame(context, design, metrics);
       break;
