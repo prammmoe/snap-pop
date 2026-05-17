@@ -8,7 +8,7 @@ import {
   type RefObject,
 } from "react";
 import {
-  FRAME_DESIGNS,
+  FRAME_COLOR_OPTIONS,
   FRAME_TEMPLATES,
   LIVE_CLIP_SECONDS,
   PHOTO_FILTERS,
@@ -77,6 +77,7 @@ type FinishPreviewPanelProps = {
 type FilterDownloadPanelProps = {
   canDownloadLiveClips: boolean;
   downloadMode: DownloadMode;
+  frameColor: string;
   isStripComplete: boolean;
   liveDownloadError: string | null;
   liveVideoSupported: boolean;
@@ -84,7 +85,7 @@ type FilterDownloadPanelProps = {
   selectedFilter: PhotoFilter;
   selectedTemplate: FrameTemplate;
   onDownload: () => void;
-  onSelectFrameDesign: (frameDesignId: string) => void;
+  onSelectFrameColor: (frameColor: string) => void;
   onSelectDownloadMode: (mode: DownloadMode) => void;
   onSelectFilter: (filterId: string) => void;
 };
@@ -377,8 +378,8 @@ export function CaptureNextPanel({
         <h2 className="section-title">Next step</h2>
         <p className="mini-label">
           {isStripComplete
-            ? "Your photos are ready. Move to frame design, filter, and download."
-            : `Capture all ${selectedTemplate.frameCount} slots before choosing the final frame.`}
+            ? "Your photos are ready. Move to frame color, filter, and download."
+            : `Capture all ${selectedTemplate.frameCount} slots before choosing the final color.`}
         </p>
       </div>
       <button
@@ -387,7 +388,7 @@ export function CaptureNextPanel({
         disabled={!isStripComplete}
         className="primary-action mt-4 w-full"
       >
-        Choose frame & download
+        Choose color & download
       </button>
     </section>
   );
@@ -431,7 +432,7 @@ export function FinishPreviewPanel({
         return;
       }
 
-      drawStripBase(previewContext, selectedTemplate, selectedFrameDesign, metrics);
+      drawStripBase(previewContext, selectedFrameDesign, metrics);
       loadedPhotos.forEach((image, index) => {
         drawStripFrame(
           previewContext,
@@ -477,6 +478,7 @@ export function FinishPreviewPanel({
 export function FilterDownloadPanel({
   canDownloadLiveClips,
   downloadMode,
+  frameColor,
   isStripComplete,
   liveDownloadError,
   liveVideoSupported,
@@ -484,7 +486,7 @@ export function FilterDownloadPanel({
   selectedFilter,
   selectedTemplate,
   onDownload,
-  onSelectFrameDesign,
+  onSelectFrameColor,
   onSelectDownloadMode,
   onSelectFilter,
 }: FilterDownloadPanelProps) {
@@ -500,7 +502,7 @@ export function FilterDownloadPanel({
 
       {!isStripComplete ? (
         <div className="rounded-[1.25rem] border-2 border-[#243027] bg-[#f4cc65] p-4 text-sm font-bold leading-6 text-[#243027]">
-          Capture every slot to unlock frame designs, filters, and downloads.
+          Capture every slot to unlock frame color, filters, and downloads.
         </div>
       ) : null}
 
@@ -509,19 +511,35 @@ export function FilterDownloadPanel({
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-4 px-1">
               <h3 className="text-sm font-black uppercase tracking-[0.08em]">
-                Frame design
+                Frame color
               </h3>
-              <span className="mini-label">Choose last</span>
+              <span className="mini-label">{frameColor.toUpperCase()}</span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {FRAME_DESIGNS.map((frameDesign) => (
-                <FrameDesignButton
-                  key={frameDesign.id}
-                  frameDesign={frameDesign}
-                  selected={selectedFrameDesign.id === frameDesign.id}
-                  onSelect={() => onSelectFrameDesign(frameDesign.id)}
-                />
+            <div className="frame-color-grid">
+              {FRAME_COLOR_OPTIONS.map((colorOption) => (
+                <button
+                  key={colorOption.value}
+                  type="button"
+                  onClick={() => onSelectFrameColor(colorOption.value)}
+                  className={`frame-color-swatch ${
+                    frameColor === colorOption.value ? "frame-color-swatch-selected" : ""
+                  }`}
+                  style={{ backgroundColor: colorOption.value }}
+                  aria-label={`Use ${colorOption.name} frame color`}
+                >
+                  <span>{colorOption.name}</span>
+                </button>
               ))}
+            </div>
+            <div className="color-picker-field">
+              <label htmlFor="frame-color-picker">Custom color</label>
+              <input
+                id="frame-color-picker"
+                type="color"
+                value={frameColor}
+                onChange={(event) => onSelectFrameColor(event.target.value)}
+                aria-label="Choose a custom frame color"
+              />
             </div>
           </div>
 
@@ -551,7 +569,7 @@ export function FilterDownloadPanel({
         </>
       ) : null}
 
-      <div className="segmented-control mt-4">
+      <div className="download-mode-grid mt-4">
         <DownloadModeButton
           active={downloadMode === "image"}
           label="Image strip"
@@ -615,63 +633,6 @@ function FrameTemplateCard({
         </p>
       </div>
     </button>
-  );
-}
-
-type FrameDesignButtonProps = {
-  frameDesign: FrameDesign;
-  selected: boolean;
-  onSelect: () => void;
-};
-
-function FrameDesignButton({
-  frameDesign,
-  selected,
-  onSelect,
-}: FrameDesignButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`choice-card ${selected ? "choice-card-selected" : ""}`}
-    >
-      <FrameDesignPreview frameDesign={frameDesign} />
-      <p className="mt-2 text-xs font-black uppercase leading-4 tracking-[0.05em]">
-        {frameDesign.name}
-      </p>
-      <p className="mini-label mt-1 text-[0.7rem]">
-        {frameDesign.description}
-      </p>
-    </button>
-  );
-}
-
-function FrameDesignPreview({ frameDesign }: { frameDesign: FrameDesign }) {
-  return (
-    <div
-      className="relative h-24 overflow-hidden rounded-xl border-2"
-      style={{
-        backgroundColor: frameDesign.background,
-        borderColor: frameDesign.accent,
-      }}
-    >
-      <div
-        className="absolute inset-x-3 top-3 h-3 rounded-sm"
-        style={{ backgroundColor: frameDesign.accent }}
-      />
-      <div
-        className="absolute inset-x-5 bottom-4 top-8 rounded-md bg-white/85"
-        style={{ border: `2px solid ${frameDesign.secondary}` }}
-      />
-      <div
-        className="absolute -left-3 bottom-2 h-8 w-8 rounded-full"
-        style={{ backgroundColor: frameDesign.secondary }}
-      />
-      <div
-        className="absolute -right-3 top-7 h-8 w-8 rounded-full"
-        style={{ backgroundColor: frameDesign.secondary }}
-      />
-    </div>
   );
 }
 
@@ -788,8 +749,9 @@ function DownloadModeButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`secondary-action px-3 py-2 text-sm disabled:shadow-none ${
-        active ? "bg-[#f4cc65]" : "bg-[#fff8df]"
+      aria-pressed={active}
+      className={`download-mode-button ${
+        active ? "download-mode-button-active" : ""
       }`}
     >
       {label}

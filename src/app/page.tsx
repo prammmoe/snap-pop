@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AppHeader,
   CaptureCameraPanel,
@@ -12,7 +12,7 @@ import {
   WelcomeScreen,
 } from "./photo-booth-ui";
 import {
-  FRAME_DESIGNS,
+  FRAME_COLOR_OPTIONS,
   FRAME_TEMPLATES,
   LIVE_CLIP_SECONDS,
   PHOTO_FILTERS,
@@ -25,11 +25,11 @@ import {
   createCapturedPhotoCanvas,
   createEmptyLiveClips,
   createEmptyPhotos,
+  createFrameDesign,
   drawFrameDesign,
   drawStripBase,
   drawStripFrame,
   getFilterById,
-  getFrameDesignById,
   getStripMetrics,
   getSupportedMp4MimeType,
   getTemplateById,
@@ -51,7 +51,7 @@ export default function Home() {
   const [cameraState, setCameraState] = useState<CameraState>("loading");
   const [downloadMode, setDownloadMode] = useState<DownloadMode>("image");
   const [filterId, setFilterId] = useState(PHOTO_FILTERS[0].id);
-  const [frameDesignId, setFrameDesignId] = useState(FRAME_DESIGNS[0].id);
+  const [frameColor, setFrameColor] = useState(FRAME_COLOR_OPTIONS[0].value);
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [liveDownloadError, setLiveDownloadError] = useState<string | null>(
     null,
@@ -61,7 +61,10 @@ export default function Home() {
 
   const selectedTemplate = getTemplateById(templateId);
   const selectedFilter = getFilterById(filterId);
-  const selectedFrameDesign = getFrameDesignById(frameDesignId);
+  const selectedFrameDesign = useMemo(
+    () => createFrameDesign(frameColor),
+    [frameColor],
+  );
   const filteredMediaStyle = { filter: selectedFilter.previewFilter };
   const [photos, setPhotos] = useState<(string | null)[]>(
     createEmptyPhotos(selectedTemplate.frameCount),
@@ -458,7 +461,7 @@ export default function Home() {
   ) {
     const metrics = getStripMetrics(template);
 
-    drawStripBase(context, template, frameDesign, metrics);
+    drawStripBase(context, frameDesign, metrics);
     images.forEach((image, index) => {
       drawStripFrame(
         context,
@@ -568,9 +571,9 @@ export default function Home() {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,480px)] lg:items-start">
             <section className="space-y-4">
               <div className="space-y-3">
-                <h1 className="page-title">Choose your frame.</h1>
+                <h1 className="page-title">Choose your frame color.</h1>
                 <p className="body-copy max-w-xl">
-                  Pick a final frame design, choose a filter, then download your
+                  Pick a final frame color, choose a filter, then download your
                   strip.
                 </p>
               </div>
@@ -589,11 +592,12 @@ export default function Home() {
                 isStripComplete={isStripComplete}
                 liveDownloadError={liveDownloadError}
                 liveVideoSupported={liveVideoSupported}
+                frameColor={frameColor}
                 selectedFrameDesign={selectedFrameDesign}
                 selectedFilter={selectedFilter}
                 selectedTemplate={selectedTemplate}
                 onDownload={() => void downloadSelectedFormat()}
-                onSelectFrameDesign={setFrameDesignId}
+                onSelectFrameColor={setFrameColor}
                 onSelectDownloadMode={setDownloadMode}
                 onSelectFilter={setFilterId}
               />
