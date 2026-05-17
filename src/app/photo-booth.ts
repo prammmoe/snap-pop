@@ -205,11 +205,13 @@ export const PHOTO_FILTERS: PhotoFilter[] = [
 
 export const FRAME_COLOR_OPTIONS: FrameColorOption[] = [
   { name: "Cream", value: "#fffaf2" },
+  { name: "White", value: "#ffffff" },
   { name: "Blush", value: "#ffd6df" },
   { name: "Sun", value: "#ffe071" },
   { name: "Mint", value: "#bfe8d4" },
   { name: "Sky", value: "#cfe5ff" },
   { name: "Ink", value: "#201c18" },
+  { name: "Black", value: "#000000" },
 ];
 
 export function createEmptyPhotos(count: number) {
@@ -402,17 +404,23 @@ export function drawStripFrame(
   template: FrameTemplate,
   metrics: StripMetrics,
   canvasFilter: string,
+  showWhiteBorder: boolean,
+  borderColor: string,
 ) {
   const { x, y } = getFramePosition(index, template.columns, metrics);
-  const matSize = Math.max(8, Math.round(metrics.stripWidth * 0.012));
 
-  context.fillStyle = template.mat;
-  context.fillRect(
-    x - matSize,
-    y - matSize,
-    metrics.frameWidth + matSize * 2,
-    metrics.frameHeight + matSize * 2,
-  );
+  if (showWhiteBorder) {
+    const matSize = Math.max(8, Math.round(metrics.stripWidth * 0.012));
+
+    context.fillStyle = normalizeHexColor(borderColor);
+    context.fillRect(
+      x - matSize,
+      y - matSize,
+      metrics.frameWidth + matSize * 2,
+      metrics.frameHeight + matSize * 2,
+    );
+  }
+
   context.filter = canvasFilter;
   context.drawImage(image, x, y, metrics.frameWidth, metrics.frameHeight);
   context.filter = "none";

@@ -52,6 +52,8 @@ export default function Home() {
   const [downloadMode, setDownloadMode] = useState<DownloadMode>("image");
   const [filterId, setFilterId] = useState(PHOTO_FILTERS[0].id);
   const [frameColor, setFrameColor] = useState(FRAME_COLOR_OPTIONS[0].value);
+  const [borderColor, setBorderColor] = useState("#ffffff");
+  const [showWhiteBorder, setShowWhiteBorder] = useState(true);
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [liveDownloadError, setLiveDownloadError] = useState<string | null>(
     null,
@@ -470,6 +472,8 @@ export default function Home() {
         template,
         metrics,
         selectedFilter.canvasFilter,
+        showWhiteBorder,
+        borderColor,
       );
     });
     drawFrameDesign(context, frameDesign, metrics);
@@ -582,6 +586,8 @@ export default function Home() {
                 selectedFilter={selectedFilter}
                 selectedFrameDesign={selectedFrameDesign}
                 selectedTemplate={selectedTemplate}
+                showWhiteBorder={showWhiteBorder}
+                borderColor={borderColor}
               />
             </section>
 
@@ -592,14 +598,18 @@ export default function Home() {
                 isStripComplete={isStripComplete}
                 liveDownloadError={liveDownloadError}
                 liveVideoSupported={liveVideoSupported}
+                borderColor={borderColor}
                 frameColor={frameColor}
                 selectedFrameDesign={selectedFrameDesign}
                 selectedFilter={selectedFilter}
                 selectedTemplate={selectedTemplate}
+                showWhiteBorder={showWhiteBorder}
                 onDownload={() => void downloadSelectedFormat()}
+                onSelectBorderColor={setBorderColor}
                 onSelectFrameColor={setFrameColor}
                 onSelectDownloadMode={setDownloadMode}
                 onSelectFilter={setFilterId}
+                onToggleWhiteBorder={setShowWhiteBorder}
               />
             </aside>
           </div>

@@ -329,6 +329,12 @@ canvas {
     0 0 0 2px var(--line-strong);
 }
 
+.frame-color-swatch:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+  transform: none;
+}
+
 .color-picker-field {
   display: flex;
   min-height: 3rem;
@@ -351,6 +357,64 @@ canvas {
   border-radius: 0.55rem;
   background: transparent;
   padding: 0;
+}
+
+.color-picker-field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.toggle-field {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: var(--surface-strong);
+  padding: 0.55rem 0.75rem;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.toggle-field input {
+  appearance: none;
+  position: relative;
+  height: 1.55rem;
+  width: 2.8rem;
+  flex: 0 0 auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.toggle-field input::before {
+  content: "";
+  position: absolute;
+  left: 0.18rem;
+  top: 50%;
+  height: 1.08rem;
+  width: 1.08rem;
+  border-radius: 999px;
+  background: var(--ink);
+  transform: translateY(-50%);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.toggle-field input:checked {
+  background: var(--accent-soft);
+}
+
+.toggle-field input:checked::before {
+  background: var(--accent-strong);
+  transform: translate(1.2rem, -50%);
 }
 
 .preview-well {
